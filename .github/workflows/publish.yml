@@ -41,6 +41,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: 1.91.1
           targets: ${{ matrix.platform == 'macos-14' && 'aarch64-apple-darwin' || matrix.platform == 'macos-15' && 'x86_64-apple-darwin' || '' }}
 
       - name: Install Linux Dependencies
@@ -54,6 +55,10 @@ jobs:
             libjavascriptcoregtk-4.1-dev=2.44.0-2 \
             gir1.2-javascriptcoregtk-4.1=2.44.0-2 \
             gir1.2-webkit2-4.1=2.44.0-2 \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-libav \
             libgtk-3-dev \
             libappindicator3-dev \
             librsvg2-dev \
@@ -154,7 +159,7 @@ jobs:
           releaseBody: ${{ steps.release_notes.outputs.BODY }}
           releaseDraft: false
           prerelease: false
-          args: ${{ matrix.args }}
+          args: ${{ matrix.args != '' && format('{0} -- --locked', matrix.args) || '-- --locked' }}
           tauriScript: 'bun tauri'
 
   update-tap:
@@ -261,3 +266,24 @@ jobs:
             git commit -m "Update Frame to v$VERSION"
             git push
           fi
+
+  publish-winget:
+    needs: publish-tauri
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Version
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          "VERSION=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Publish release to WinGet
+        uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: 66HEX.Frame
+          installers-regex: 'x64\-setup\.exe$'
+          release-tag: ${{ steps.version.outputs.VERSION }}
+          token: ${{ secrets.WINGET_ACC_TOKEN }}

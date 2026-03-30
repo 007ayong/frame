@@ -9,9 +9,6 @@
 	import Checkbox from '$lib/components/ui/Checkbox.svelte';
 	import { isAudioCodecAllowed } from '$lib/services/media';
 	import { _ } from '$lib/i18n';
-	import { themeStore } from '$lib/stores/theme.svelte';
-	import { loadWindowOpacity } from '$lib/services/settings';
-	import { onMount } from 'svelte';
 
 	const AUDIO_CODECS = [
 		{ id: 'aac', label: 'AAC / Stereo' },
@@ -41,12 +38,6 @@
 
 	const isLossless = $derived(['flac', 'alac', 'pcm_s16le'].includes(config.audioCodec));
 	const encodeControlsDisabled = $derived(disabled || copyMode);
-
-	onMount(() => {
-		loadWindowOpacity().then((val) => {
-			themeStore.opacity = val;
-		});
-	});
 
 	function toggleTrack(index: number) {
 		if (disabled) return;
@@ -111,7 +102,7 @@
 				<div class="flex items-center justify-between">
 					<Label for="audio-volume">{$_('audio.volume')}</Label>
 					<span
-						class="button-highlight rounded bg-blue-700 px-1.5 text-[10px] font-semibold text-foreground"
+						class="button-highlight rounded bg-blue-700 px-1.5 text-[10px] font-semibold text-foreground shadow-sm shadow-black/5"
 						>{config.audioVolume}%</span
 					>
 				</div>
@@ -133,7 +124,6 @@
 			<div class="flex items-start gap-2 pt-2">
 				<Checkbox
 					id="audio-normalize"
-					class="pt-0.5"
 					checked={config.audioNormalize}
 					onchange={(e) => onUpdate({ audioNormalize: e.currentTarget.checked })}
 					disabled={encodeControlsDisabled}
@@ -207,12 +197,11 @@
 							</div>
 						</div>
 
-						<div
-							style="background-color: color-mix(in srgb, var(--background), transparent {100 -
-								themeStore.opacity}%)"
-							class={cn(
-								'button-highlight flex h-3 w-3 items-center justify-center rounded-full transition-all'
-							)}
+							<div
+								style="background-color: var(--background)"
+								class={cn(
+									'button-highlight flex h-3 w-3 items-center justify-center rounded-full transition-all'
+								)}
 						>
 							<div
 								class="h-1.5 w-1.5 rounded-full bg-blue-700 transition-all"

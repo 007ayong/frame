@@ -21,7 +21,7 @@
 	</a>
 </div>
 
-**Frame** is a high-performance media conversion utility built on the Tauri v2 framework. It provides a native interface for FFmpeg operations, allowing for granular control over video and audio transcoding parameters. The application leverages a Rust-based backend for concurrent task management and process execution, coupled with a Svelte 5 frontend for configuration and state monitoring.
+**Frame** is a high-performance media conversion utility built on the Tauri v2 framework. It provides a native interface for FFmpeg operations, allowing for granular control over video, audio, and image conversion parameters. The application leverages a Rust-based backend for concurrent task management and process execution, coupled with a Svelte 5 frontend for configuration and state monitoring.
 
 <br />
 <div align="center">
@@ -58,7 +58,11 @@ See [GitHub Sponsors](https://github.com/sponsors/66HEX) for full sponsorship de
 
 ### Media Conversion Core
 
-- **Container Support:** `mp4`, `mkv`, `webm`, `mov`, `gif`, `mp3`, `m4a`, `wav`, `flac`.
+- **Media Types:** Video, Audio, Image.
+- **Supported Output Formats:**
+  - **Video:** `mp4`, `mkv`, `webm`, `mov`, `gif`
+  - **Audio:** `mp3`, `m4a`, `wav`, `flac`
+  - **Image:** `png`, `jpg`, `webp`, `bmp`, `tiff`
 - **Video Encoders:**
   - `libx264` (H.264 / AVC)
   - `libx265` (H.265 / HEVC)
@@ -66,11 +70,12 @@ See [GitHub Sponsors](https://github.com/sponsors/66HEX) for full sponsorship de
   - `prores` (Apple ProRes)
   - `libsvtav1` (Scalable Video Technology AV1)
   - **Hardware Acceleration:** `h264_videotoolbox` (Apple Silicon), `hevc_videotoolbox` (Apple Silicon), `h264_nvenc` (NVIDIA), `hevc_nvenc` (NVIDIA), `av1_nvenc` (NVIDIA).
+- **Image Encoders:** `png`, `mjpeg` (JPEG), `libwebp` (WebP), `bmp`, `tiff`.
 - **Audio Encoders:** `aac`, `ac3` (Dolby Digital), `libopus`, `mp3`, `alac` (Apple Lossless), `flac` (Free Lossless Audio Codec), `pcm_s16le` (WAV).
 - **Bitrate Control:** Constant Rate Factor (CRF) or Target Bitrate (kbps).
 - **Scaling:** Bicubic, Lanczos, Bilinear, Nearest Neighbor.
 - **Metadata Probing:** Automated extraction of stream details (codec, duration, bitrate, channel layout) via `ffprobe`.
-- **AI Upscaling:** Integrated `Real-ESRGAN` for high-quality video upscaling (x2, x4).
+- **AI Upscaling:** Integrated `Real-ESRGAN` for high-quality video and image upscaling (x2, x4).
 
 ### Architecture & Workflow
 
@@ -95,7 +100,7 @@ See [GitHub Sponsors](https://github.com/sponsors/66HEX) for full sponsorship de
 - **Styling:** Tailwind CSS v4, `clsx`, `tailwind-merge`.
 - **State Management:** Svelte 5 `$state` / `$props`.
 - **Internationalization:** Multi-language interface with automatic system language detection.
-- **Typography:** Archivo (embedded), Loskeley Mono (embedded).
+- **Typography:** Loskeley Mono (embedded).
 
 ## Installation
 
@@ -106,6 +111,20 @@ The easiest way to get started is to download the latest release for your platfo
 [**Download Latest Release**](https://github.com/66HEX/frame/releases)
 
 > **Note:** Since the application is not yet code-signed, you may need to manually approve it in your system settings (see the warning at the top of this file).
+
+### WinGet (Windows)
+
+Frame is available in the official WinGet repository under the `66HEX.Frame` identifier.
+
+```powershell
+winget install --id 66HEX.Frame -e
+```
+
+To update:
+
+```powershell
+winget upgrade --id 66HEX.Frame -e
+```
 
 ### Homebrew (macOS)
 
@@ -118,25 +137,27 @@ brew install --cask frame
 
 ### Linux System Requirements
 
-Even when using the **AppImage**, Frame relies on the system's **WebKitGTK** and **GStreamer** libraries for rendering the UI and handling media playback. If the application crashes upon adding a source or the video preview remains blank, you likely need to install the missing GStreamer plugins.
+Even when using the **AppImage**, Frame relies on the system's **WebKitGTK** and **GStreamer** libraries for rendering the UI and handling media playback. Native dialogs on Linux also require **XDG Desktop Portal** integration (plus a desktop-specific backend) and `zenity` as fallback. If the application crashes upon adding a source, the video preview remains blank, or file dialogs fail to open/theme correctly, install the packages below.
 
 - **Ubuntu / Debian:**
 
   ```bash
   sudo apt update
-  sudo apt install libwebkit2gtk-4.1-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-libav
+  sudo apt install libwebkit2gtk-4.1-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-libav xdg-desktop-portal xdg-desktop-portal-gtk zenity
   ```
 
 - **Arch Linux:**
 
   ```bash
-  sudo pacman -S --needed webkit2gtk-4.1 gst-plugins-base gst-plugins-good gst-libav
+  sudo pacman -S --needed webkit2gtk-4.1 gst-plugins-base gst-plugins-good gst-libav xdg-desktop-portal xdg-desktop-portal-gtk zenity
   ```
 
 - **Fedora:**
   ```bash
-  sudo dnf install webkit2gtk4.1 gstreamer1-plugins-base gstreamer1-plugins-good gstreamer1-libav
+  sudo dnf install webkit2gtk4.1 gstreamer1-plugins-base gstreamer1-plugins-good gstreamer1-libav xdg-desktop-portal xdg-desktop-portal-gtk zenity
   ```
+
+> **KDE users:** install `xdg-desktop-portal-kde` (instead of `xdg-desktop-portal-gtk`) to get Plasma-native themed dialogs.
 
 ### Build from Source
 
@@ -187,6 +208,7 @@ bun run setup:upscaler
     - **Source:** View detected file metadata.
     - **Output:** Select container format and output filename.
     - **Video:** Configure codec, bitrate/CRF, resolution, and framerate.
+    - **Images:** Configure image resolution/scaling, pixel format, and optional AI upscaling.
     - **Audio:** Select codec, bitrate, channels, and specific tracks.
     - **Presets:** Save and load reusable conversion profiles.
 3.  **Execution:** Initiates the conversion process via the Rust backend.
